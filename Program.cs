@@ -59,6 +59,8 @@ namespace Q9xS
                 FileInfo copyToInfo = new FileInfo(copyTo);
                 if (!File.Exists(copyTo) || updateInfo.LastWriteTime > copyToInfo.LastWriteTime)
                 {
+                    updateInfo.Attributes = FileAttributes.Normal;
+                    copyToInfo.Attributes = FileAttributes.Normal;
                     updateInfo.CopyTo(copyToInfo.FullName, true);
                     Console.WriteLine(updateInfo.FullName + " was copied to " + copyToInfo.FullName);
                 }
@@ -98,9 +100,13 @@ namespace Q9xS
 
             builder = AddToIso(builder, dirToIso);
 
-            if (Directory.Exists(dirToIso + @"\[BOOT]"))
-                Directory.Delete(@"\[BOOT]", true);
-
+            DirectoryInfo bootDir = new DirectoryInfo(dirToIso + @"\[BOOT]");
+            if (bootDir.Exists)
+            {
+                bootDir.Attributes = FileAttributes.Normal;
+                bootDir.Delete();
+            }
+                
             builder.Build(Path.GetFileNameWithoutExtension(dirToIso)+".iso");
             Console.WriteLine(Path.GetFileNameWithoutExtension(dirToIso+".iso succesfully updated."));
         }
