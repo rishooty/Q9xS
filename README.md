@@ -42,7 +42,7 @@ slipstreaming into the .CAB files, but it didn't work out for a number of reason
 * [.NET Core SDK](https://dotnet.microsoft.com/download/dotnet-core/2.1)
 
 ### Setup
-Download the latest release [here](WIP), and extract it to the directory of your choice.
+Download the latest release [here](https://github.com/rishooty/Q9xS/releases), and extract it to the directory of your choice.
 
 ## Setting up your updates
 
