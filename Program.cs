@@ -1,7 +1,9 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using DiscUtils;
 using DiscUtils.Iso9660;
+using System.Text.RegularExpressions;
 
 namespace Q9xS
 {
@@ -9,7 +11,7 @@ namespace Q9xS
     {
         static void Main(string[] args)
         {
-            if (args.Length != 2)
+            if (args.Length < 2)
             {
                 Console.WriteLine("One of your arguments are missing");
                 Console.WriteLine("The correct syntax is: dotnet Q9xS updatePath isoPath (optional)bootImagePath");
@@ -38,6 +40,7 @@ namespace Q9xS
 
             if(extract)
                 self.ExtractISO(isoPath, extractedIsoPath);
+
             self.Update9xDir(updatePath, extractedIsoPath);
             self.CreateISO(extractedIsoPath, bootImage);
         }
@@ -56,7 +59,30 @@ namespace Q9xS
                 Environment.Exit(0);
             }
 
-            foreach(string update in Directory.GetFiles(updatesDir))
+            string subDirName = new DirectoryInfo(subDir).Name;
+            string layoutPath = subDir + @"\layout.inf";
+            string layout1Path = subDir + @"\layout1.inf";
+            string layout2Path = subDir + @"\layout2.inf";
+
+            if (!File.Exists(layoutPath))
+            {
+                Console.WriteLine("layout.inf does not exist, copying a fresh one...");
+                File.Copy(@"layouts\" + subDirName + @"\layout.inf", layoutPath);
+            }
+
+            if (File.Exists(@"layouts\" + subDirName + @"\layout1.inf") && !File.Exists(layout1Path))
+            {
+                Console.WriteLine("layout1.inf does not exist, copying a fresh one...");
+                File.Copy(@"layouts\" + subDirName + @"\layout1.inf", subDir + layout1Path);
+            }
+
+            if (File.Exists(@"layouts\" + subDirName + @"\layout2.inf") && !File.Exists(layout2Path))
+            {
+                Console.WriteLine("layout2.inf does not exist, copying a fresh one...");
+                File.Copy(@"layouts\" + subDirName + @"\layout2.inf", subDir + layout2Path);
+            }
+
+            foreach (string update in Directory.GetFiles(updatesDir))
             {
                 string copyTo = subDir + @"\" + Path.GetFileName(update);
                 FileInfo updateInfo = new FileInfo(update);
@@ -69,6 +95,42 @@ namespace Q9xS
                     Console.WriteLine(updateInfo.FullName + " was copied to " + copyToInfo.FullName);
                 }
             }
+
+            // begin updating layout(s)
+            string[] updatedSubDirFiles = Directory.GetFiles(subDir);
+            UpdateLayout(updatedSubDirFiles, layoutPath);
+
+            if (File.Exists(layout1Path))
+                UpdateLayout(updatedSubDirFiles, layout1Path);
+
+            if (File.Exists(layout2Path))
+                UpdateLayout(updatedSubDirFiles, layout2Path);
+        }
+
+        public void UpdateLayout(string[] updatedSubDirFiles, string layoutToUpdatePath)
+        {
+            string layoutText = File.ReadAllText(layoutToUpdatePath);
+
+            foreach (string file in updatedSubDirFiles)
+            {
+                string fileName = Path.GetFileName(file);
+                FileInfo fileInfo = new FileInfo(file);
+                long fileSize = fileInfo.Length;
+                for(int i = 0; i < 29; i++)
+                {
+                    string regEx = fileName + @"=" + i + @",,[1-9]{1,6}";
+                    Match match = Regex.Match(layoutText, regEx, RegexOptions.IgnoreCase);
+                    if (match.Success)
+                    {
+                        layoutText = Regex.Replace(layoutText, regEx, fileName + "=" + i +",," + fileSize, RegexOptions.IgnoreCase);
+                        break;
+                    }
+                }
+                Console.WriteLine("Layout entry for " + fileName + " updated.");
+            }
+
+            File.WriteAllText(layoutToUpdatePath, layoutText);
+            Console.WriteLine(layoutToUpdatePath + " successfully updated.");
         }
 
         public CDBuilder AddToIso(CDBuilder builder, string dirToIso)
@@ -163,6 +225,5 @@ namespace Q9xS
                 AppendDirectory(Path.GetDirectoryName(path));
             }
         }
-
     }
 }
