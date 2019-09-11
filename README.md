@@ -5,14 +5,11 @@ A utility designed to ease the process of slipstreaming updates into a Windows 9
 ## Why
 
 It's possible to slipstream some updates into Windows 9x series OSes so long as they match
-either files that already exist on the disc or within its .CAB files.
+either files that already exist on the disc or within its .CAB files. The chance of 
+success increases if you modify the layout.inf files to match your updates.
 
-However, I found the process of extracting the iso, dropping the files, and recompressing a bootable iso tedious.
-
-* It can take a bit to load all the files into your iso creating application, such as CDBurnerXP.	
-* Not all slipstreams are successful. There are many files that if modified will cause
-	  the OS installer to either simply not start or fail partway through. Given this fact,
-	  knowing which files you can and can't slipstream is a matter of trial and error.
+However, I found the process of extracting the iso, dropping the files, modifying the layout*.inf files 
+and recompressing a bootable iso tedious.
 
 As for "Why Windows 9x?", yes there are people that still use these OSes. Namely, vintage gaming enthusiasts.
 
@@ -22,7 +19,6 @@ slipstreaming into the .CAB files, but it didn't work out for a number of reason
 	
 * The best method I found involved using external tools and wasn't exactly cross-platform. 
 * All of the available C# libraries couldn't extract split cabs individually.
-* There are some .CABs windows doesn't even like being rebuilt at all, even with no changes.
 * Driver related updates don't need to match existing files, and would be missed if I used the above method. MSBATCH.inf included.
 * Encouraging people to automatically update a large mass of files didn't seem like a good idea in general. Slipstreaming is 
   already finicky as it is, so the user should know exactly which files they're updating and why.
@@ -41,10 +37,10 @@ slipstreaming into the .CAB files, but it didn't work out for a number of reason
 * [Visual Studio 2017 15.7 or higher](https://visualstudio.microsoft.com/vs/)
 * [.NET Core SDK](https://dotnet.microsoft.com/download/dotnet-core/2.1)
 
-### Setup
+### Installation
 Download the latest release [here](https://github.com/rishooty/Q9xS/releases), and extract it to the directory of your choice.
 
-## Setting up your updates
+## Preparation
 
 Create a directory in which to extract all your updates. No subdirectories, zips, cabs, or even self-extracting
 exes should be in this folder. Use [7-zip](https://www.7-zip.org/) or a similar archive utility to extract them.
@@ -80,6 +76,25 @@ you just need to delete whichever file the installer gives you an error message 
 If not that, something related to it.
 
 Have fun customizing your 9x discs!
+
+## Caveat ##
+This hasn't been tested with windows editions other than the latest of each,
+and the way it generates layouts is based on them. That being said,
+there's no guaruntee editions of 95 or 98 other than 95OSR2.5 and 98SE
+will work.
+
+If you do run into issues, extract the layout*.inf files from
+```
+extractedDiscFiles\precopy2.cab
+```
+and overwrite the existing ones in
+```
+layouts\win95 (or \win98 or \win9x)
+```
+
+I would have had it extract it straight from the cab, but again
+there's no real cross platform way to do this that doesn't rely
+on external tools on a per-os basis.
 
 ## Built With
 
