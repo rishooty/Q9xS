@@ -9,10 +9,10 @@ namespace Q9xS
     {
         static void Main(string[] args)
         {
-            if (args.Length != 3)
+            if (args.Length != 2)
             {
                 Console.WriteLine("One of your arguments are missing");
-                Console.WriteLine("The correct syntax is: dotnet Q9xS updatePath isoPath bootImagePath");
+                Console.WriteLine("The correct syntax is: dotnet Q9xS updatePath isoPath (optional)bootImagePath");
                 Environment.Exit(0);
             }
 
@@ -20,7 +20,11 @@ namespace Q9xS
             bool extract = true;
             string updatePath = args[0];
             string isoPath = args[1];
-            string bootImage = args[2];
+            string bootImage = null;
+
+            if (args.Length == 3)
+                bootImage = args[2];
+
             string extractedIsoPath = Path.GetFileNameWithoutExtension(isoPath);
 
             if (Directory.Exists(extractedIsoPath))
@@ -60,8 +64,8 @@ namespace Q9xS
                 if (!File.Exists(copyTo) || updateInfo.LastWriteTime > copyToInfo.LastWriteTime)
                 {
                     updateInfo.Attributes = FileAttributes.Normal;
-                    copyToInfo.Attributes = FileAttributes.Normal;
                     updateInfo.CopyTo(copyToInfo.FullName, true);
+                    copyToInfo.Attributes = FileAttributes.Normal;
                     Console.WriteLine(updateInfo.FullName + " was copied to " + copyToInfo.FullName);
                 }
             }
@@ -89,14 +93,11 @@ namespace Q9xS
             builder.UseJoliet = true;
             builder.VolumeIdentifier = "WIN_9X";
 
-            if (!File.Exists(bootImagePath))
+            if (bootImagePath != null)
             {
-                Console.WriteLine("Boot image does not exist, exiting.");
-                Environment.Exit(0);
+                Stream boot = File.Open(bootImagePath, FileMode.Open);
+                builder.SetBootImage(boot, BootDeviceEmulation.Diskette1440KiB, 0);
             }
-
-            Stream boot = File.Open(bootImagePath, FileMode.Open);
-            builder.SetBootImage(boot, BootDeviceEmulation.Diskette1440KiB, 0);
 
             builder = AddToIso(builder, dirToIso);
 
