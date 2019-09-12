@@ -108,7 +108,7 @@ SETUPPP.INF=2,,44520
 After
 ```
 SETUPPP.INF=2,,4452
-
+```
 You can find this value by right clicking the file, opening its properties, and looking at its size
 in bytes.
 
