@@ -9,7 +9,7 @@ either files that already exist on the disc or within its .CAB files. The chance
 success increases if you modify the layout.inf files to match your updates.
 
 However, I found the process of extracting the iso, dropping the files, modifying the layout*.inf files 
-and recompressing a bootable iso tedious.
+and recompressing the iso tedious.
 
 As for "Why Windows 9x?", yes there are people that still use these OSes. Namely, vintage gaming enthusiasts.
 
@@ -56,12 +56,12 @@ is a plain file or executable.
 
 Windows:
 ```
-dotnet Q9xS.dll updatesDirectory isoPath bootImagePath
+dotnet Q9xS.dll updatesDirectory isoPath
 ```
 
 Linux:
 ```
-dotnet ./Q9xS.dll updatesDirectory isoPath bootImagePath
+dotnet ./Q9xS.dll updatesDirectory isoPath
 ```
 
 Example:

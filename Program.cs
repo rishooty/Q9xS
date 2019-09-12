@@ -10,38 +10,45 @@ namespace Q9xS
     {
         static void Main(string[] args)
         {
-            if (args.Length < 2)
+            try
             {
-                Console.WriteLine("One of your arguments are missing");
-                Console.WriteLine("The correct syntax is: dotnet Q9xS updatePath isoPath (optional)bootImagePath");
-                Environment.Exit(0);
+                if (args.Length < 2)
+                {
+                    throw new ArgumentException("One of your arguments are missing\n" +
+                        "The correct syntax is: dotnet Q9xS updatePath isoPath");
+                }
+
+                Program self = new Program();
+                bool extract = true;
+                string updatePath = args[0];
+                string isoPath = args[1];
+                string extractedIsoPath = Path.GetFileNameWithoutExtension(isoPath);
+
+                if (!Directory.Exists(updatePath))
+                    throw new FileNotFoundException(updatePath + " does not exist");
+
+                if (!File.Exists(isoPath))
+                    throw new FileNotFoundException(isoPath + " does not exist");
+
+                if (Directory.Exists(extractedIsoPath))
+                {
+                    Console.WriteLine(@"It looks like you've already extracted the iso. Would you like to re-extract? [y/any other key]");
+                    string response = Console.ReadLine();
+
+                    if (!string.Equals(response, "y", StringComparison.OrdinalIgnoreCase))
+                        extract = false;
+                }
+
+                if (extract)
+                    self.ExtractISO(isoPath, extractedIsoPath);
+
+                self.Update9xDir(updatePath, extractedIsoPath);
+                self.CreateISO(extractedIsoPath);
             }
-
-            Program self = new Program();
-            bool extract = true;
-            string updatePath = args[0];
-            string isoPath = args[1];
-            string bootImage = null;
-
-            if (args.Length == 3)
-                bootImage = args[2];
-
-            string extractedIsoPath = Path.GetFileNameWithoutExtension(isoPath);
-
-            if (Directory.Exists(extractedIsoPath))
+            catch(Exception e)
             {
-                Console.WriteLine(@"It looks like you've already extracted the iso. Would you like to re-extract? [y/any other key]");
-                string response = Console.ReadLine();
-
-                if (!string.Equals(response, "y", StringComparison.OrdinalIgnoreCase))
-                    extract = false;
+                Console.WriteLine("Error: " + e.Message);
             }
-
-            if(extract)
-                self.ExtractISO(isoPath, extractedIsoPath);
-
-            self.Update9xDir(updatePath, extractedIsoPath);
-            self.CreateISO(extractedIsoPath, bootImage);
         }
 
         public void Update9xDir(string updatesDir, string extracted9xDir) {
@@ -56,8 +63,7 @@ namespace Q9xS
                 subDir = extracted9xDir + @"\Win9x";
             else
             {
-                Console.WriteLine(extracted9xDir + " is not an extracted windows iso");
-                Environment.Exit(0);
+                throw new DirectoryNotFoundException(extracted9xDir + " is not an extracted windows iso");
             }
 
             string subDirName = new DirectoryInfo(subDir).Name;
@@ -65,23 +71,13 @@ namespace Q9xS
             string layout1Path = subDir + @"\layout1.inf";
             string layout2Path = subDir + @"\layout2.inf";
 
-            if (!File.Exists(layoutPath))
-            {
-                Console.WriteLine("layout.inf does not exist, copying a fresh one...");
-                File.Copy(@"layouts\" + subDirName + @"\layout.inf", layoutPath);
-            }
+            CopyFreshLayoutInf(layoutPath, subDirName);
 
-            if (File.Exists(@"layouts\" + subDirName + @"\layout1.inf") && !File.Exists(layout1Path))
-            {
-                Console.WriteLine("layout1.inf does not exist, copying a fresh one...");
-                File.Copy(@"layouts\" + subDirName + @"\layout1.inf", layout1Path);
-            }
+            if (File.Exists(@"layouts\" + subDirName + @"\layout1.inf"))
+                CopyFreshLayoutInf(layout1Path, subDirName);
 
-            if (File.Exists(@"layouts\" + subDirName + @"\layout2.inf") && !File.Exists(layout2Path))
-            {
-                Console.WriteLine("layout2.inf does not exist, copying a fresh one...");
-                File.Copy(@"layouts\" + subDirName + @"\layout2.inf", layout2Path);
-            }
+            if (File.Exists(@"layouts\" + subDirName + @"\layout2.inf"))
+                CopyFreshLayoutInf(layout2Path, subDirName);
 
             foreach (string update in Directory.GetFiles(updatesDir))
             {
@@ -109,6 +105,22 @@ namespace Q9xS
 
                 if (File.Exists(layout2Path))
                     UpdateLayout(updatedSubDirFiles, layout2Path);
+            }
+        }
+
+        public void CopyFreshLayoutInf(string layoutPath, string subDirName)
+        {
+            if (!File.Exists(layoutPath))
+            {
+                string layoutCopyFromPath = @"layouts\" + subDirName + @"\" + Path.GetFileName(layoutPath);
+                if (!File.Exists(layoutCopyFromPath))
+                {
+                    throw new FileNotFoundException(layoutCopyFromPath + " does not exist.\n" +
+                        "Make sure that you have the layouts folder in the same directory" +
+                        "as this application.");
+                }
+                Console.WriteLine(layoutPath + " does not exist, copying a fresh one...");
+                File.Copy(layoutCopyFromPath, layoutPath);
             }
         }
 
@@ -153,7 +165,7 @@ namespace Q9xS
             return builder;
         }
 
-        public void CreateISO(string dirToIso, string bootImagePath)
+        public void CreateISO(string dirToIso)
         {
             CDBuilder builder = new CDBuilder
             {
@@ -161,21 +173,7 @@ namespace Q9xS
                 VolumeIdentifier = "WIN_9X"
             };
 
-            if (bootImagePath != null)
-            {
-                Stream boot = File.Open(bootImagePath, FileMode.Open);
-                builder.SetBootImage(boot, BootDeviceEmulation.Diskette1440KiB, 0);
-            }
-
             builder = AddToIso(builder, dirToIso);
-
-            DirectoryInfo bootDir = new DirectoryInfo(dirToIso + @"\[BOOT]");
-            if (bootDir.Exists)
-            {
-                bootDir.Attributes = FileAttributes.Normal;
-                bootDir.Delete();
-            }
-                
             builder.Build(Path.GetFileNameWithoutExtension(dirToIso)+".iso");
             Console.WriteLine(Path.GetFileNameWithoutExtension(dirToIso+".iso succesfully updated."));
         }
