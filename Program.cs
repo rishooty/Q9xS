@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
 using DiscUtils;
 using DiscUtils.Iso9660;
 using System.Text.RegularExpressions;
@@ -46,6 +45,8 @@ namespace Q9xS
         }
 
         public void Update9xDir(string updatesDir, string extracted9xDir) {
+            bool updated = false;
+
             string subDir = null;
             if (Directory.Exists(extracted9xDir+@"\Win95"))
                 subDir = extracted9xDir + @"\Win95";
@@ -73,13 +74,13 @@ namespace Q9xS
             if (File.Exists(@"layouts\" + subDirName + @"\layout1.inf") && !File.Exists(layout1Path))
             {
                 Console.WriteLine("layout1.inf does not exist, copying a fresh one...");
-                File.Copy(@"layouts\" + subDirName + @"\layout1.inf", subDir + layout1Path);
+                File.Copy(@"layouts\" + subDirName + @"\layout1.inf", layout1Path);
             }
 
             if (File.Exists(@"layouts\" + subDirName + @"\layout2.inf") && !File.Exists(layout2Path))
             {
                 Console.WriteLine("layout2.inf does not exist, copying a fresh one...");
-                File.Copy(@"layouts\" + subDirName + @"\layout2.inf", subDir + layout2Path);
+                File.Copy(@"layouts\" + subDirName + @"\layout2.inf", layout2Path);
             }
 
             foreach (string update in Directory.GetFiles(updatesDir))
@@ -89,6 +90,7 @@ namespace Q9xS
                 FileInfo copyToInfo = new FileInfo(copyTo);
                 if (!File.Exists(copyTo) || updateInfo.LastWriteTime > copyToInfo.LastWriteTime)
                 {
+                    updated = true;
                     updateInfo.Attributes = FileAttributes.Normal;
                     updateInfo.CopyTo(copyToInfo.FullName, true);
                     copyToInfo.Attributes = FileAttributes.Normal;
@@ -97,14 +99,17 @@ namespace Q9xS
             }
 
             // begin updating layout(s)
-            string[] updatedSubDirFiles = Directory.GetFiles(subDir);
-            UpdateLayout(updatedSubDirFiles, layoutPath);
+            if (updated)
+            {
+                string[] updatedSubDirFiles = Directory.GetFiles(subDir);
+                UpdateLayout(updatedSubDirFiles, layoutPath);
 
-            if (File.Exists(layout1Path))
-                UpdateLayout(updatedSubDirFiles, layout1Path);
+                if (File.Exists(layout1Path))
+                    UpdateLayout(updatedSubDirFiles, layout1Path);
 
-            if (File.Exists(layout2Path))
-                UpdateLayout(updatedSubDirFiles, layout2Path);
+                if (File.Exists(layout2Path))
+                    UpdateLayout(updatedSubDirFiles, layout2Path);
+            }
         }
 
         public void UpdateLayout(string[] updatedSubDirFiles, string layoutToUpdatePath)
@@ -114,11 +119,10 @@ namespace Q9xS
             foreach (string file in updatedSubDirFiles)
             {
                 string fileName = Path.GetFileName(file);
-                FileInfo fileInfo = new FileInfo(file);
-                long fileSize = fileInfo.Length;
+                long fileSize = new FileInfo(file).Length;
                 for(int i = 0; i < 29; i++)
                 {
-                    string regEx = fileName + @"=" + i + @",,[1-9]{1,6}";
+                    string regEx = fileName + @"=" + i + @",,[1-9]*";
                     Match match = Regex.Match(layoutText, regEx, RegexOptions.IgnoreCase);
                     if (match.Success)
                     {
@@ -151,9 +155,11 @@ namespace Q9xS
 
         public void CreateISO(string dirToIso, string bootImagePath)
         {
-            CDBuilder builder = new CDBuilder();
-            builder.UseJoliet = true;
-            builder.VolumeIdentifier = "WIN_9X";
+            CDBuilder builder = new CDBuilder
+            {
+                UseJoliet = true,
+                VolumeIdentifier = "WIN_9X"
+            };
 
             if (bootImagePath != null)
             {
@@ -216,11 +222,11 @@ namespace Q9xS
                     Directory.CreateDirectory(path);
                 }
             }
-            catch (DirectoryNotFoundException Ex)
+            catch (DirectoryNotFoundException)
             {
                 AppendDirectory(Path.GetDirectoryName(path));
             }
-            catch (PathTooLongException Ex)
+            catch (PathTooLongException)
             {
                 AppendDirectory(Path.GetDirectoryName(path));
             }

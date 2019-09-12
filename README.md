@@ -77,7 +77,7 @@ If not that, something related to it.
 
 Have fun customizing your 9x discs!
 
-## Caveat ##
+## Caveats ##
 This hasn't been tested with windows editions other than the latest of each,
 and the way it generates layouts is based on them. That being said,
 there's no guaruntee editions of 95 or 98 other than 95OSR2.5 and 98SE
@@ -95,6 +95,36 @@ layouts\win95 (or \win98 or \win9x)
 I would have had it extract it straight from the cab, but again
 there's no real cross platform way to do this that doesn't rely
 on external tools on a per-os basis.
+
+There are also some files which are both very sensitive to having their layout.inf
+differ from their actual filsize and can't have their filesizes read correctly
+by this application. For these files, you either want to delete them
+or update their entries in layout.inf manually.
+
+Before:
+```
+SETUPPP.INF=2,,44520
+```
+After
+```
+SETUPPP.INF=2,,4452
+
+You can find this value by right clicking the file, opening its properties, and looking at its size
+in bytes.
+
+Finally, there are files which simply will not slipstream properly, even after fixing
+it's filesize value in layout.inf. The only solution is to delete these from both the updates
+and extracted iso folders. You can easily recognize them by related errors coming up during
+installation. Most often these are false positives and don't actually stop your installation,
+but better safe than sorry.
+
+### List of Known Layout Sensitive Files
+
+* SETUPPP.INF
+
+### List of Known Slipstream Incompatible Files 
+
+* rpcrt4.dll
 
 ## Built With
 
