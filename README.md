@@ -77,7 +77,21 @@ If not that, something related to it.
 
 Have fun customizing your 9x discs!
 
-## Caveats ##
+## Making the image bootable
+Unfortunately, I can't get the latest DiscUtils' floppy emulation to work properly.
+You'll have to use an external tool, like CDBurnerXP. The good news is you can use
+the already slipstreamed files in your extracted ISO folder.
+
+1. Download, install, and launch CDBurnerXP
+2. Choose your language, and hit ok on the default "data disc" option
+3. Drag and drop all the files within your extracted+slipstreamed iso folder.
+4. Click "Disc->Boot options" on the top toolbar.
+5. Check make disc bootable, browse for your boot floppy image, and hit ok.
+6. Click "File->Save Compilation as ISO File" on the top toolbar, and save your new bootable image.
+
+Note this doesn't work with Windows 95 for some reason, there seems to be no way to make it bootable from CD.
+
+## Caveats
 This hasn't been tested with windows editions other than the latest of each,
 and the way it generates layouts is based on them. That being said,
 there's no guaruntee editions of 95 or 98 other than 95OSR2.5 and 98SE
