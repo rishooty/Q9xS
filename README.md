@@ -52,6 +52,8 @@ Keep and overwrite files in this folder as you see fit. You may want the latest 
 or you may want to keep a specific version of a given file. Just make sure that everything
 is a plain file or executable.
 
+If you don't feel like doing this, you can get one of my pre-made update packs [here](https://my.pcloud.com/publink/show?code=kZ8V2pkZmwo1miyr1a7BLUjgXpSlYFMkzvAy).
+
 ## Running
 
 Windows:
@@ -139,6 +141,7 @@ but better safe than sorry.
 ### List of Known Slipstream Incompatible Files 
 
 * rpcrt4.dll
+* TIMEDATE.CPL
 
 ## Built With
 

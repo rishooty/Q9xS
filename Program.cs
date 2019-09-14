@@ -174,8 +174,8 @@ namespace Q9xS
             };
 
             builder = AddToIso(builder, dirToIso);
-            builder.Build(Path.GetFileNameWithoutExtension(dirToIso)+".iso");
-            Console.WriteLine(Path.GetFileNameWithoutExtension(dirToIso+".iso succesfully updated."));
+            builder.Build(Path.GetFileNameWithoutExtension(dirToIso)+"_slip.iso");
+            Console.WriteLine(Path.GetFileNameWithoutExtension(dirToIso+".iso successfully updated."));
         }
 
         public void ExtractISO(string toExtract, string folderName)
