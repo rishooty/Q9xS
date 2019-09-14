@@ -142,6 +142,7 @@ but better safe than sorry.
 
 * rpcrt4.dll
 * TIMEDATE.CPL
+* msxml.dll
 
 ## Built With
 
