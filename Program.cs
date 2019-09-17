@@ -202,10 +202,12 @@ namespace Q9xS
             {
                 using (Stream FileStr = finfo.OpenRead())
                 {
-                    using (FileStream Fs = File.Create(RootPath + "\\" + finfo.Name))
+                    char[] charsToRemove = { ';', '1' };
+                    string fileName = finfo.Name.TrimEnd(charsToRemove);
+                    using (FileStream Fs = File.Create(RootPath + "\\" + fileName))
                     {
                         FileStr.CopyTo(Fs, 4 * 1024);
-                        Console.WriteLine(finfo.Name + " was extracted.");
+                        Console.WriteLine(fileName + " was extracted.");
                     }
                 }
             }
